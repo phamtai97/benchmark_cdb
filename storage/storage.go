@@ -97,3 +97,4 @@ func InitStorage(user string, host string, port int, dbName string, sslmode bool
 func (cockroachDB *CockroachDB) GetDB() *sql.DB {
 	return cockroachDB.db
 }
+

@@ -1,4 +1,4 @@
-package benchmark
+package executor
 
 import (
 	"benchmark_cockroachdb/configvar"
@@ -70,6 +70,22 @@ func CreateMsg(id string, balance int64) *Message {
 // }
 
 //InsertMsg insert message
+// func InsertMsg(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
+// 	defer wg.Done()
+// 	i := atomic.AddInt64(&iMsg, 1)
+
+// 	for i <= numberMsg {
+// 		id := strconv.FormatInt(i, 10)
+// 		msg := CreateMsg(id, balance)
+// 		if _, err := db.Exec(
+// 			"INSERT INTO benchmark.accounts"+
+// 				" (id, balance) VALUES ($1, $2)", msg.Id, msg.Balance); err != nil {
+// 			log.Fatal("Insert msg error: ", err)
+// 		}
+// 		i = atomic.AddInt64(&iMsg, 1)
+// 	}
+// }
+
 func InsertMsg(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
 	defer wg.Done()
 	i := atomic.AddInt64(&iMsg, 1)
@@ -78,7 +94,7 @@ func InsertMsg(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
 		id := strconv.FormatInt(i, 10)
 		msg := CreateMsg(id, balance)
 		if _, err := db.Exec(
-			"INSERT INTO benchmark.accounts"+
+			"INSERT INTO accounts"+
 				" (id, balance) VALUES ($1, $2)", msg.Id, msg.Balance); err != nil {
 			log.Fatal("Insert msg error: ", err)
 		}
@@ -87,6 +103,22 @@ func InsertMsg(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
 }
 
 //QueryAccount query account
+// func QueryAccount(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
+// 	defer wg.Done()
+// 	i := atomic.AddInt64(&iMsg, 1)
+// 	var idRes string
+// 	var balanceRes int64
+
+// 	for i <= numberMsg {
+// 		// id := strconv.FormatInt(1, 10)
+// 		id := "1"
+// 		if err := db.QueryRow("SELECT * FROM benchmark.accounts WHERE id = $1", id).Scan(&idRes, &balanceRes); err != nil {
+// 			log.Fatal("Query fail: ", err)
+// 		}
+// 		i = atomic.AddInt64(&iMsg, 1)
+// 	}
+// }
+
 func QueryAccount(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
 	defer wg.Done()
 	i := atomic.AddInt64(&iMsg, 1)
@@ -96,7 +128,7 @@ func QueryAccount(wg *sync.WaitGroup, db *sql.DB, numberMsg int64) {
 	for i <= numberMsg {
 		// id := strconv.FormatInt(1, 10)
 		id := "1"
-		if err := db.QueryRow("SELECT * FROM benchmark.accounts WHERE id = $1", id).Scan(&idRes, &balanceRes); err != nil {
+		if err := db.QueryRow("SELECT * FROM accounts WHERE id = $1", id).Scan(&idRes, &balanceRes); err != nil {
 			log.Fatal("Query fail: ", err)
 		}
 		i = atomic.AddInt64(&iMsg, 1)
@@ -136,13 +168,14 @@ func HandlerExec(configVar *configvar.CliConfVar, db *sql.DB) {
 
 //Execute execute
 func Execute(configVar *configvar.CliConfVar) {
-	user := "taiptht"
+	user := "postgres"
+	password := "taiptht"
 	nameDB := "benchmark"
 	hostDB := "localhost"
-	portDB := 8000
+	portDB := 5432
 	ssmode := true
 
-	storage, err := storage.InitStorage(user, hostDB, portDB, nameDB, ssmode)
+	storage, err := storage.InitStoragePostgre(user, password, hostDB, portDB, nameDB, ssmode)
 	if err != nil {
 		log.Fatal("[Server] Create Storage: %s", err.Error())
 	}
@@ -150,7 +183,6 @@ func Execute(configVar *configvar.CliConfVar) {
 	log.Info("---- Start benchmark ----")
 
 	start := time.Now()
-
 	HandlerExec(configVar, storage.GetDB())
 
 	t := time.Now()

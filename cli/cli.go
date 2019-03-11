@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"benchmark_cockroachdb/benchmark"
 	"benchmark_cockroachdb/configvar"
+	"benchmark_cockroachdb/executor"
 	"log"
 	"os"
 
@@ -48,7 +48,7 @@ func Initialize() {
 			Usage: "benchmark",
 			Flags: flags,
 			Action: func(c *cli.Context) error {
-				benchmark.Execute(cliConfVar)
+				executor.Execute(cliConfVar)
 				return nil
 			},
 		},
